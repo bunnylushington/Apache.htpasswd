@@ -1,0 +1,2 @@
+defmodule Htpasswd do
+end
