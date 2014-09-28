@@ -17,6 +17,17 @@ defmodule HtpasswdTest do
     assert H.check("md5:xxx", @htfile) == false
     assert H.check("md5:", @htfile) == false
 
+    assert H.check("default:default", @htfile) == true
+    assert H.check("default:xxx", @htfile) == false
+    assert H.check("default:", @htfile) == false
+
+    assert H.check("sha:sha", @htfile) == true
+    assert H.check("sha:xxx", @htfile) == false
+    assert H.check("sha:", @htfile) == false
+
+    assert H.check("ghost:ghost", @htfile) == false
+    assert H.check("ghost:", @htfile) == false
+
   end
 
   test "get_enc_passwd/2" do

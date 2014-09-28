@@ -1,19 +1,15 @@
 defmodule Apache.Htpasswd do
 
-  @magic "$apr1$"
-
   def check(slug, htfile) do
     [user, pass] = String.split slug, ":", parts: 2
     check(user, pass, htfile)
   end
 
   def check(user, pass, htfile) do
-    enc = get_enc_passwd(user, htfile)
-    cond do
-      match :plaintext, pass, enc -> true
-      match :crypt, pass, enc -> true
-      match :md5, pass, enc -> true
-      true -> false
+    case get_enc_passwd(user, htfile) do
+      nil -> false
+      enc -> 
+        Enum.any?([:plaintext, :crypt, :sha, :md5], &(match &1, pass, enc))
     end
   end
 
@@ -35,6 +31,9 @@ defmodule Apache.Htpasswd do
   def match(:md5, pass, enc) do
     {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(pass, enc)
     str == enc
+  end
+  def match(:sha, pass, enc) do
+    enc == "{SHA}" <> Base.encode64(:crypto.hash :sha, pass)
   end
   
 end
