@@ -1,6 +1,6 @@
-defmodule Htpasswd do
+defmodule Apache.Htpasswd do
 
-  @MD5_magic "$apr1$"
+  @magic "$apr1$"
 
   def check(slug, htfile) do
     [user, pass] = String.split slug, ":", parts: 2
@@ -33,11 +33,8 @@ defmodule Htpasswd do
     :crypt.crypt(pass, salt) == enc
   end
   def match(:md5, pass, enc) do
-    case String.starts_with?(enc, @MD5_magic) do
-      true -> [_, salt, hash] = String.split enc, "$", trim: true, parts: 3
-      false -> false
-    end
-    
+    {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(pass, enc)
+    str == enc
   end
   
 end

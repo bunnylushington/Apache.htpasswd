@@ -1,6 +1,6 @@
 defmodule HtpasswdTest do
   use ExUnit.Case
-  alias Htpasswd, as: H
+  alias Apache.Htpasswd, as: H
 
   @htfile "test/htfile"
 
