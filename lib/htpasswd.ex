@@ -15,10 +15,10 @@ defmodule Apache.Htpasswd do
   iex> Apache.Htpasswd.check "plaintext:plaintext", "test/htfile"
   true
 
-  iex> Apache.Htpasswd.encode "user", "pass"
+  iex> Apache.Htpasswd.encode! "user", "pass"
   "user:$apr1$O5f9TZT.$IBzxX8byvgfsLYp/dkIzC/"
 
-  iex> Apache.Htpasswd.encode "user", "pass", :sha
+  iex> Apache.Htpasswd.encode! "user", "pass", :sha
   "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="
 
   iex> Apache.Htpasswd.check "user:pass", Apache.Htpasswd.encode("user", "pass")
@@ -31,6 +31,8 @@ defmodule Apache.Htpasswd do
   :ok
   """
 
+  require Logger
+
   def check(slug, htfile_or_string) do
     [user, plaintext] = String.split slug, ":", parts: 2
     case File.exists?(htfile_or_string) do
@@ -40,12 +42,22 @@ defmodule Apache.Htpasswd do
   end
 
   def encode(user, plaintext, method \\ :md5) do
-    Enum.join [user, hash(method, plaintext)], ":"
+    case hash(method, plaintext) do
+      {:ok, encrypted} -> {:ok, Enum.join([user, encrypted], ":")}
+      {:error, err} -> {:error, err}
+    end
+  end
+  
+  def encode!(user, plaintext, method \\ :md5) do
+    case encode(user, plaintext, method) do
+      {:ok, string} -> string
+      {:error, err} -> raise RuntimeError, message: err
+    end
   end
 
   def add(user, plaintext, file, method \\ :md5) do
     if (File.exists?(file)), do: rm(user, file)
-    string = encode(user, plaintext, method)
+    string = encode!(user, plaintext, method)
     case File.open(file, [:append]) do
       {:ok, device} -> IO.puts(device, string)
                        File.close(device)
@@ -81,7 +93,7 @@ defmodule Apache.Htpasswd do
   end
 
   defp validate_password(encrypted, plaintext) do
-    Enum.any?([:plaintext, :crypt, :sha, :md5], 
+    Enum.any?([:plaintext, :sha, :md5, :crypt], 
               &(match &1, plaintext, encrypted))
   end
 
@@ -104,8 +116,14 @@ defmodule Apache.Htpasswd do
 
   defp match(:plaintext, plaintext, encrypted), do: plaintext == encrypted
   defp match(:crypt, plaintext, encrypted) do
-    <<salt :: binary-size(2), _ :: binary>> = encrypted
-    :crypt.crypt(plaintext, salt) == encrypted
+    case Code.ensure_loaded :crypt do
+      {:module, :crypt} ->
+        IO.puts "huh?"
+        <<salt :: binary-size(2), _ :: binary>> = encrypted
+        :crypt.crypt(plaintext, salt) == encrypted
+        _ -> Logger.debug(crypt_unavailable)
+             false
+    end
   end
   defp match(:md5, plaintext, encrypted) do
     {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(plaintext, encrypted)
@@ -117,15 +135,23 @@ defmodule Apache.Htpasswd do
 
   defp hash(:md5, plaintext) do
     {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(plaintext)
-    str
+    {:ok, str}
   end
   defp hash(:sha, plaintext) do 
-    @sha <> Base.encode64(:crypto.hash :sha, plaintext)
+    {:ok, @sha <> Base.encode64(:crypto.hash :sha, plaintext)}
   end
-  defp hash(:plaintext, plaintext), do: plaintext
-  defp hash(:crypt, plaintext), do: :crypt.crypt(plaintext, salt(2))
+  defp hash(:plaintext, plaintext), do: {:ok, plaintext}
+  defp hash(:crypt, plaintext) do
+    case Code.ensure_loaded?(:crypt) do
+      {:module, :crypt} -> {:ok, :crypt.crypt(plaintext, salt(2))}
+      _ -> 
+        Logger.error("Crypt dependency unavailable, hashing failed.")
+        {:error, "crypt dependency not found, :crypt method unavailable"}
+    end
+  end
   defp hash(method, _) do 
-    raise(RuntimeError, message: "invalid encoding method :#{ method }")
+    Logger.error("Unknown encoding method :#{ method }")
+    {:error, "invalid encoding method :#{ method }"}
   end
 
   defp salt(length, seed \\ :os.timestamp) do
@@ -133,4 +159,11 @@ defmodule Apache.Htpasswd do
     Enum.shuffle(@atoz) |> Enum.take(length) |> List.to_string
   end
 
+  defp crypt_unavailable do
+    """
+    The dependency Crypt is unavailable.  Checking and encoding passwords
+    with the crypt schema is impossible.
+    """
+  end
+  
 end
