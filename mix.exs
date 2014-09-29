@@ -3,7 +3,7 @@ defmodule Htpasswd.Mixfile do
 
   def project do
     [app: :htpasswd,
-     version: "0.0.1",
+     version: "1.0.0",
      elixir: "~> 1.0.0",
      description: description,
      package: package,
