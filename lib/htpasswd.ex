@@ -3,6 +3,34 @@ defmodule Apache.Htpasswd do
   @sha "{SHA}"
   @atoz 'abcdefghijklmnopqrstuvwxyz'
   
+  @moduledoc """ 
+  Provides basic htpasswd(1) functions as a library.  The hashing
+  methods available are :md5 (the default), :sha, :crypt, and
+  :plaintext.
+
+  # Examples
+  iex> Apache.Htpasswd.check "user:pass", "test/htfile"
+  false
+
+  iex> Apache.Htpasswd.check "plaintext:plaintext", "test/htfile"
+  true
+
+  iex> Apache.Htpasswd.encode "user", "pass"
+  "user:$apr1$O5f9TZT.$IBzxX8byvgfsLYp/dkIzC/"
+
+  iex> Apache.Htpasswd.encode "user", "pass", :sha
+  "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="
+
+  iex> Apache.Htpasswd.check "user:pass", Apache.Htpasswd.encode("user", "pass")
+  true  
+
+  iex> Apache.Htpasswd.add("user", "pass", "/tmp/htpasswd")
+  {:ok, "user:$apr1$on6He14N$3AeecTsC32uTadbYK1Ij4/"}
+
+  iex> Apache.Htpasswd.rm("user", "/tmp/htpasswd")
+  :ok
+  """
+
   def check(slug, htfile_or_string) do
     [user, plaintext] = String.split slug, ":", parts: 2
     case File.exists?(htfile_or_string) do
