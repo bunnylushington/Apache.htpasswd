@@ -54,7 +54,6 @@ defmodule HtpasswdTest do
 
   test "rm/3" do
     tmp_file = Path.join System.tmp_dir!, "htpasswd_test"
-    IO.puts tmp_file
     assert {:ok, _str} = H.add("newuser", "newpass", tmp_file)
     assert :ok = H.rm("newuser", tmp_file)
   end

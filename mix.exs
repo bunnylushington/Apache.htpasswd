@@ -27,7 +27,7 @@ defmodule Htpasswd.Mixfile do
      files: ["lib", "mix.exs", "README*", "test"],
      contributors: ["Kevin Montuori"],
      licenses: ["MIT"],
-     links %{"GitHub" => "https://github.com/kevinmontuori/Apache.htpasswd"}
+     links: %{"GitHub" => "https://github.com/kevinmontuori/Apache.htpasswd"}
     ]
   end
 
