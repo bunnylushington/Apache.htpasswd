@@ -35,9 +35,10 @@ defmodule Apache.Htpasswd do
 
   def check(slug, htfile_or_string) do
     [user, plaintext] = String.split slug, ":", parts: 2
-    case File.exists?(htfile_or_string) do
-      true ->  check_against_file(user, plaintext, htfile_or_string)
-      false -> check_against_string(user, plaintext, htfile_or_string)
+    if File.exists?(htfile_or_string) do
+      check_against_file(user, plaintext, htfile_or_string)
+    else
+      check_against_string(user, plaintext, htfile_or_string)
     end
   end
 
@@ -106,23 +107,23 @@ defmodule Apache.Htpasswd do
   end
   
   defp password_from_string(string) do
-    case Regex.match?(~r/:/, string) do
-      true -> String.strip(string) 
-              |> String.split(":", parts: 2) 
-              |> List.last
-      false -> nil
+    if Regex.match?(~r/:/, string) do
+      String.strip(string) 
+      |> String.split(":", parts: 2) 
+      |> List.last
+    else
+      nil
     end
   end
 
   defp match(:plaintext, plaintext, encrypted), do: plaintext == encrypted
   defp match(:crypt, plaintext, encrypted) do
-    case Code.ensure_loaded :crypt do
-      {:module, :crypt} ->
-        IO.puts "huh?"
-        <<salt :: binary-size(2), _ :: binary>> = encrypted
-        :crypt.crypt(plaintext, salt) == encrypted
-        _ -> Logger.debug(crypt_unavailable)
-             false
+    if Code.ensure_loaded?(:crypt) do
+      <<salt :: binary-size(2), _ :: binary>> = encrypted
+      :crypt.crypt(plaintext, salt) == encrypted
+    else
+      Logger.debug(crypt_unavailable)
+      false
     end
   end
   defp match(:md5, plaintext, encrypted) do
@@ -142,11 +143,11 @@ defmodule Apache.Htpasswd do
   end
   defp hash(:plaintext, plaintext), do: {:ok, plaintext}
   defp hash(:crypt, plaintext) do
-    case Code.ensure_loaded?(:crypt) do
-      {:module, :crypt} -> {:ok, :crypt.crypt(plaintext, salt(2))}
-      _ -> 
-        Logger.error("Crypt dependency unavailable, hashing failed.")
-        {:error, "crypt dependency not found, :crypt method unavailable"}
+    if Code.ensure_loaded?(:crypt) do
+      {:ok, :crypt.crypt(plaintext, salt(2))}
+    else 
+      Logger.error("Crypt dependency unavailable, hashing failed.")
+      {:error, "crypt dependency not found, :crypt method unavailable"}
     end
   end
   defp hash(method, _) do 

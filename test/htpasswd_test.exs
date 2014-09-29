@@ -21,7 +21,7 @@ defmodule HtpasswdTest do
     assert H.check("sha:xxx", @htfile) == false
     assert H.check("sha:", @htfile) == false
 
-    if Code.ensure_loaded?(:crypt) == {:module, :crypt} do
+    if Code.ensure_loaded(:crypt) do
       assert H.check("crypt:crypt", @htfile) == true
     else
       assert H.check("crypt:crypt", @htfile) == false
@@ -39,7 +39,7 @@ defmodule HtpasswdTest do
     plaintext = H.encode!("plaintext", "plaintext", :plaintext)
     assert H.check("plaintext:plaintext", plaintext)
 
-    if Code.ensure_loaded?(:crypt) == {:module, :crypt} do
+    if Code.ensure_loaded?(:crypt) do
       crypt = H.encode!("crypt", "crypt", :crypt)
       assert H.check("crypt:crypt", crypt)
     else
