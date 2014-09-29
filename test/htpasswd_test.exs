@@ -44,8 +44,19 @@ defmodule HtpasswdTest do
 
     default = H.encode("default", "default")
     assert H.check("default:default", default)
-
   end
   
+  test "add/4" do
+    tmp_file = Path.join System.tmp_dir!, "htpasswd_test"
+    assert {:ok, _str} = H.add("user", "pass", tmp_file, :md5)
+    assert H.check("user:pass", tmp_file) == true
+  end
+
+#   test "rm/3" do
+#     tmp_file = Path.join System.tmp_dir!, "htpasswd_test"
+#     assert :ok = H.add("
+# end
+    
+
 
 end

@@ -15,6 +15,16 @@ defmodule Apache.Htpasswd do
     Enum.join [user, hash(method, plaintext)], ":"
   end
 
+  def add(user, plaintext, file, method \\ :md5) do
+    string = encode(user, plaintext, method)
+    case File.open(file, [:append]) do
+      {:ok, device} -> IO.puts(device, string)
+                       File.close(device)
+                       {:ok, string}
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
   def check_against_file(user, plaintext, htfile) do
     case password_from_file(user, htfile) do
       nil -> false
