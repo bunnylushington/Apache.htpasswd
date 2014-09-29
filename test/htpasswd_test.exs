@@ -30,12 +30,4 @@ defmodule HtpasswdTest do
 
   end
 
-#  "test encode/3" do
-#    H.encode
-
-  test "get_enc_passwd/2" do
-    assert "plaintext" == H.get_enc_passwd("plaintext", @htfile)
-    assert nil == H.get_enc_passwd("xyzzy", @htfile)
-  end
-
 end
