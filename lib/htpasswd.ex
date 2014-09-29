@@ -1,6 +1,7 @@
 defmodule Apache.Htpasswd do
   
   @sha "{SHA}"
+  @atoz 'abcdefghijklmnopqrstuvwxyz'
   
   def check(slug, htfile_or_string) do
     [user, plaintext] = String.split slug, ":", parts: 2
@@ -8,6 +9,10 @@ defmodule Apache.Htpasswd do
       true ->  check_against_file(user, plaintext, htfile_or_string)
       false -> check_against_string(user, plaintext, htfile_or_string)
     end
+  end
+
+  def encode(user, plaintext, method \\ :md5) do
+    Enum.join [user, hash(method, plaintext)], ":"
   end
 
   def check_against_file(user, plaintext, htfile) do
@@ -59,22 +64,22 @@ defmodule Apache.Htpasswd do
     encrypted == @sha <> Base.encode64(:crypto.hash :sha, plaintext)
   end
 
-  # -------------------------------------------------- ENCODING.  
-  
-  def encode(user, pass, method \\ :md5) do
-    Enum.join [user, do_hash(method, pass)], ":"
+  defp hash(:md5, plaintext) do
+    {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(plaintext)
+    str
   end
-              
-  defp do_hash(:md5, pass) do
-     {:ok, _, _, _, str} = Apache.PasswdMD5.crypt(pass)
-     str
+  defp hash(:sha, plaintext) do 
+    @sha <> Base.encode64(:crypto.hash :sha, plaintext)
   end
-  defp do_hash(:sha, pass), do: @sha <> Base.encode64(:crypto.hash :sha, pass)
-  defp do_hash(:plaintext, pass), do: pass
-  defp do_hash(:crypt, pass), do: :crypt.crypt(pass, "ab")
-  defp do_hash(m, _), do: raise(RuntimeError, 
-                               message: "invalid hash algo :#{ m }")
+  defp hash(:plaintext, plaintext), do: plaintext
+  defp hash(:crypt, plaintext), do: :crypt.crypt(plaintext, salt(2))
+  defp hash(method, _) do 
+    raise(RuntimeError, message: "invalid encoding method :#{ method }")
+  end
 
-
+  defp salt(length, seed \\ :os.timestamp) do
+    :random.seed(seed)
+    Enum.shuffle(@atoz) |> Enum.take(length) |> List.to_string
+  end
 
 end

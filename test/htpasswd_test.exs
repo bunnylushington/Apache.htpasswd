@@ -27,7 +27,25 @@ defmodule HtpasswdTest do
 
     assert H.check("ghost:ghost", @htfile) == false
     assert H.check("ghost:", @htfile) == false
+  end
+
+  test "encode/3" do
+    plaintext = H.encode("plaintext", "plaintext", :plaintext)
+    assert H.check("plaintext:plaintext", plaintext)
+
+    crypt = H.encode("crypt", "crypt", :crypt)
+    assert H.check("crypt:crypt", crypt)
+
+    md5 = H.encode("md5", "md5", :md5)
+    assert H.check("md5:md5", md5)
+
+    sha = H.encode("sha", "sha", :sha)
+    assert H.check("sha:sha", sha)
+
+    default = H.encode("default", "default")
+    assert H.check("default:default", default)
 
   end
+  
 
 end
