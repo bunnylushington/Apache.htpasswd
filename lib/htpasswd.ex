@@ -33,6 +33,7 @@ defmodule Apache.Htpasswd do
 
   require Logger
 
+  def check(nil, _), do: false
   def check(slug, htfile_or_string) do
     [user, plaintext] = String.split slug, ":", parts: 2
     if File.exists?(htfile_or_string) do

@@ -5,6 +5,8 @@ defmodule HtpasswdTest do
   @htfile "test/htfile"
 
   test "check/2" do
+    assert H.check(nil, @htfile) == false
+
     assert H.check("plaintext:plaintext", @htfile) == true
     assert H.check("plaintext:xxx", @htfile) == false
     assert H.check("plaintext:", @htfile) == false
