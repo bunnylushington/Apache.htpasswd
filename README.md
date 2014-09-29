@@ -1,11 +1,11 @@
-Htpasswd
-========
+# Apache.Htpasswd
 
 Provides basic htpasswd(1) functions as a library.  The hashing
 methods available are :md5 (the default), :sha, :crypt, and
 :plaintext.
 
-    # Examples
+
+## Examples
     iex> Apache.Htpasswd.check "user:pass", "test/htfile"
     false
   
@@ -29,7 +29,7 @@ methods available are :md5 (the default), :sha, :crypt, and
     :ok
 
 
-** Requirements
+## Requirements
 
 Apache.Htpasswd depends on the Elixir package `apache_passwd_md5` and,
 optionally, the Erlang crypt library (if crypt style passwords are
