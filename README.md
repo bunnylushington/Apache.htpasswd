@@ -18,14 +18,26 @@ methods available are :md5 (the default), :sha, :crypt, and
     iex> Apache.Htpasswd.encode "user", "pass", :sha
     "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="
   
-    iex> Apache.Htpasswd.check "user:pass", Apache.Htpasswd.encode("user", "pass")
-    true  
+    iex> Apache.Htpasswd.check "user:pass",
+    ...>   Apache.Htpasswd.encode("user", "pass")
+    true
   
     iex> Apache.Htpasswd.add("user", "pass", "/tmp/htpasswd")
     {:ok, "user:$apr1$on6He14N$3AeecTsC32uTadbYK1Ij4/"}
   
     iex> Apache.Htpasswd.rm("user", "/tmp/htpasswd")
     :ok
+
+
+** Requirements
+
+Apache.Htpasswd depends on the Elixir package `apache_passwd_md5` and,
+optionally, the Erlang crypt library (if crypt style passwords are
+going to be read or written).  I've tried to ensure that the code
+works just fine in default (:md5) mode if the crypt library isn't
+present.  If you run into trouble, please drop me a line and I'll take
+a look.
+
 
 --------
 
