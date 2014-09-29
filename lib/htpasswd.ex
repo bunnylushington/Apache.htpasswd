@@ -16,6 +16,7 @@ defmodule Apache.Htpasswd do
   end
 
   def add(user, plaintext, file, method \\ :md5) do
+    if (File.exists?(file)), do: rm(user, file)
     string = encode(user, plaintext, method)
     case File.open(file, [:append]) do
       {:ok, device} -> IO.puts(device, string)
@@ -23,6 +24,14 @@ defmodule Apache.Htpasswd do
                        {:ok, string}
       {:error, reason} -> {:error, reason}
     end
+  end
+
+  def rm(user, file) do
+    File.write!(file, filtered_file_contents(user, file))
+  end
+
+  def filtered_file_contents(user, file) do
+    File.stream!(file) |> Enum.filter &(! String.starts_with?(&1, user <> ":"))
   end
 
   def check_against_file(user, plaintext, htfile) do
@@ -33,9 +42,13 @@ defmodule Apache.Htpasswd do
   end
 
   def check_against_string(user, plaintext, string) do
-    case password_from_string(string) do
-      nil -> false
-      encrypted -> validate_password(encrypted, plaintext)
+    case String.starts_with?(string, user) do
+      false -> false
+      true -> 
+        case password_from_string(string) do
+          nil -> false
+          encrypted -> validate_password(encrypted, plaintext)
+        end
     end
   end
 
