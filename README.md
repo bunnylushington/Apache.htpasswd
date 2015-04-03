@@ -13,13 +13,13 @@ methods available are :md5 (the default), :sha, :crypt, and
     true
   
     iex> Apache.Htpasswd.encode "user", "pass"
-    "user:$apr1$O5f9TZT.$IBzxX8byvgfsLYp/dkIzC/"
+    {:ok, "user:$apr1$I9cKzQKi$XqBj0dWlCV9j5XpVC1H6a0"}
   
     iex> Apache.Htpasswd.encode "user", "pass", :sha
-    "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="
+    {:ok, "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="}
   
     iex> Apache.Htpasswd.check "user:pass",
-    ...>   Apache.Htpasswd.encode("user", "pass")
+    ...>   Apache.Htpasswd.encode!("user", "pass")
     true
   
     iex> Apache.Htpasswd.add("user", "pass", "/tmp/htpasswd")
