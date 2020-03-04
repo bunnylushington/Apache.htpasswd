@@ -6,28 +6,30 @@ methods available are :md5 (the default), :sha, :crypt, and
 
 
 ## Examples
-    iex> Apache.Htpasswd.check "user:pass", "test/htfile"
-    false
-  
-    iex> Apache.Htpasswd.check "plaintext:plaintext", "test/htfile"
-    true
-  
-    iex> Apache.Htpasswd.encode "user", "pass"
-    {:ok, "user:$apr1$I9cKzQKi$XqBj0dWlCV9j5XpVC1H6a0"}
-  
-    iex> Apache.Htpasswd.encode "user", "pass", :sha
-    {:ok, "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="}
-  
-    iex> Apache.Htpasswd.check "user:pass",
-    ...>   Apache.Htpasswd.encode!("user", "pass")
-    true
-  
-    iex> Apache.Htpasswd.add("user", "pass", "/tmp/htpasswd")
-    {:ok, "user:$apr1$on6He14N$3AeecTsC32uTadbYK1Ij4/"}
-  
-    iex> Apache.Htpasswd.rm("user", "/tmp/htpasswd")
-    :ok
 
+```elixir
+iex> Apache.Htpasswd.check "user:pass", "test/htfile"
+false
+
+iex> Apache.Htpasswd.check "plaintext:plaintext", "test/htfile"
+true
+
+iex> Apache.Htpasswd.encode "user", "pass"
+{:ok, "user:$apr1$I9cKzQKi$XqBj0dWlCV9j5XpVC1H6a0"}
+
+iex> Apache.Htpasswd.encode "user", "pass", :sha
+{:ok, "user:{SHA}nU4eI71bcnBGqeO0t9tXvY1u5oQ="}
+
+iex> Apache.Htpasswd.check "user:pass",
+...>   Apache.Htpasswd.encode!("user", "pass")
+true
+
+iex> Apache.Htpasswd.add("user", "pass", "/tmp/htpasswd")
+{:ok, "user:$apr1$on6He14N$3AeecTsC32uTadbYK1Ij4/"}
+
+iex> Apache.Htpasswd.rm("user", "/tmp/htpasswd")
+:ok
+```
 
 ## Requirements
 
